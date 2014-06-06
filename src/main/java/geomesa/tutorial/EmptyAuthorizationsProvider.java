@@ -9,7 +9,9 @@ import java.util.Map;
 /**
  * Implementation of auth provider that always returns empty auths
  */
-public class EmptyAuthorizationsProvider implements AuthorizationsProvider {
+public class EmptyAuthorizationsProvider
+        implements AuthorizationsProvider {
+
     @Override
     public Authorizations getAuthorizations() {
         return new Authorizations();
