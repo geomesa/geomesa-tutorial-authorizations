@@ -1,19 +1,12 @@
-GeoMesa Query Tutorial
+GeoMesa Authorizations Tutorial
 ============================
 
-This tutorial covers some different ways to query and transform results using GeoMesa. It queries the GDELT dataset, 
+This tutorial covers using Accumulo authorizations in your GeoMesa queries. It queries the GDELT dataset, 
 which must be ingested before following this tutorial.
 
-The different types of queries explored are:
+This tutorial will show you how to use a default set of authorizations for your queries. It will also show you how to write custom providers that can pull authorizations dynamically. It will demonstrate this by creating an authorization provider for GeoServer.
 
-1.  basic filter query
-2.  query to return a projection (subset) of attributes
-2.  query to transform attributes
-3.  query to create derived attributes using transforms
-4.  query to perform a geometric transform on results
-
-The only dynamic element in the tutorial is the Accumulo destination; that is
-a property that you provide on the command-line when running the code.
+Complete instructions are available on the [main GeoMesa site](http://geomesa.github.io/2014/06/04/geomesa-authorizations/)
 
 Prerequisites
 -------------
@@ -25,9 +18,7 @@ Before you begin, you must have the following:
 * Apache [Maven](http://maven.apache.org/) installed
 * a GitHub client installed
 
-You must also have ingested the GDELT dataset using GeoMesa. You can find instructions for doing that here:
-
-[GeoMesa GDELT Analysis](http://geomesa.github.io/2014/04/17/geomesa-gdelt-analysis/)
+You must also have ingested the GDELT dataset using GeoMesa, with applied visibility labels.
 
 Download and build GeoMesa
 --------------------------
@@ -55,7 +46,7 @@ Download and build this tutorial
 Pick a reasonable directory on your machine, and run:
 
 ```
-git clone git@github.com:geomesa/geomesa-tutorial-transformations.git
+git clone git@github.com:geomesa/geomesa-tutorial-authorizations.git
 ```
 
 The ```pom.xml``` file contains an explicit list of dependent libraries that will be bundled together into the final tutorial.  You should confirm
@@ -77,7 +68,7 @@ Run the tutorial
 On the command-line, run:
 
 ```
-java -cp ./target/geomesa-tutorial-transformations-1.0.jar geomesa.tutorial.QueryTutorial -instanceId <instance> -zookeepers <zoos> -user <user> -password <pwd> -tableName <table> -featureName <feature>
+java -cp ./target/geomesa-tutorial-authorizations-1.0.jar geomesa.tutorial.AuthorizationsTutorial -instanceId <instance> -zookeepers <zoos> -user <user> -password <pwd> -tableName <table> -featureName <feature>
 ```
 
 where you provide the following arguments:
