@@ -11,7 +11,7 @@ import java.util.HashMap;
 /**
  * Integration test for connecting to LDAP for authorizations
  */
-public class LdapAuthorizationProviderTest {
+public class LdapAuthorizationsProviderTest {
 
     public static void main(String[] args) {
         // create the provider and initialize it with the 'configure' method
