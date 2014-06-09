@@ -160,7 +160,7 @@ public class LdapAuthorizationsProvider
                      cn,
                      authString);
 
-        if (authString == null) {
+        if (authString == null || authString.isEmpty()) {
             return new Authorizations();
         }
 
