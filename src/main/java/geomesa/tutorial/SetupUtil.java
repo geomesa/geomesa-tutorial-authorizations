@@ -26,12 +26,18 @@ import java.util.Map;
 
 public class SetupUtil {
 
-    static String INSTANCE_ID = "instanceId";
-    static String ZOOKEEPERS = "zookeepers";
-    static String USER = "user";
-    static String PASSWORD = "password";
-    static String AUTHS = "auths";
-    static String TABLE_NAME = "tableName";
+    public static final String FEATURE_NAME = "featureName";
+
+    public static final String INSTANCE_ID = "instanceId";
+    public static final String ZOOKEEPERS = "zookeepers";
+    public static final String USER = "user";
+    public static final String PASSWORD = "password";
+    public static final String AUTHS = "auths";
+    public static final String TABLE_NAME = "tableName";
+
+    public static final String FEATURE_STORE = "featureStore";
+    public static final String GEOSERVER_URL = "geoserverUrl";
+    public static final String TIMEOUT = "timeout";
 
     // sub-set of parameters that are used to create the Accumulo DataStore
     static String[] ACCUMULO_CONNECTION_PARAMS = new String[] {INSTANCE_ID,
@@ -45,7 +51,7 @@ public class SetupUtil {
      * Creates a common set of command-line options for the parser.  Each option
      * is described separately.
      */
-    static Options getCommonRequiredOptions() {
+    static Options getGeomesaDataStoreOptions() {
         Options options = new Options();
 
         Option instanceIdOpt = OptionBuilder.withArgName(INSTANCE_ID)
@@ -95,6 +101,11 @@ public class SetupUtil {
                                            .create(TABLE_NAME);
         options.addOption(tableNameOpt);
 
+        options.addOption(OptionBuilder.withArgName(FEATURE_NAME).hasArg().isRequired()
+                                       .withDescription(
+                                               "the FeatureTypeName used to store the GDELT data, e.g.:  gdelt")
+                                       .create(FEATURE_NAME));
+
         return options;
     }
 
@@ -110,5 +121,31 @@ public class SetupUtil {
         System.out.println("Connecting to " + dsConf.get(TABLE_NAME) + " at " + dsConf.get(
                 INSTANCE_ID) + ":" + dsConf.get(ZOOKEEPERS));
         return dsConf;
+    }
+
+    static Options getWfsOptions() {
+        Options options = new Options();
+
+        Option geoserver = OptionBuilder.withArgName(GEOSERVER_URL)
+                                            .hasArg()
+                                            .isRequired()
+                                            .withDescription(
+                                                    "the base url to geoserver e.g:  https://localhost:8443/geoserver/")
+                                            .create(GEOSERVER_URL);
+        options.addOption(geoserver);
+
+        Option timeout = OptionBuilder.withArgName(TIMEOUT)
+                                            .hasArg()
+                                            .withDescription(
+                                                    "the HTTP connection timeout, in milliseconds")
+                                            .create(TIMEOUT);
+        options.addOption(timeout);
+
+        options.addOption(OptionBuilder.withArgName(FEATURE_STORE).hasArg().isRequired()
+                                       .withDescription(
+                                               "the geoserver store containing the GDELT data. Needs to be identified by <workspace>:<name>, e.g. 'geomesa:gdelt'")
+                                       .create(FEATURE_STORE));
+
+        return options;
     }
 }

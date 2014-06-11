@@ -1,9 +1,5 @@
 package geomesa.tutorial;
 
-import geomesa.core.data.AccumuloDataStore;
-import geomesa.core.data.AccumuloFeatureStore;
-import geomesa.core.security.AuthorizationsProvider;
-import geomesa.core.security.DefaultAuthorizationsProvider;
 import geomesa.tutorial.GdeltFeature.Attributes;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -11,22 +7,23 @@ import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Options;
 import org.geotools.data.DataStore;
 import org.geotools.data.DataStoreFinder;
-import org.geotools.data.FeatureStore;
+import org.geotools.data.FeatureSource;
 import org.geotools.data.Query;
+import org.geotools.data.wfs.WFSDataStore;
+import org.geotools.data.wfs.WFSDataStoreFactory;
 import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.filter.text.cql2.CQLException;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
-import org.opengis.feature.simple.SimpleFeatureType;
 import org.opengis.filter.Filter;
 import org.opengis.filter.FilterFactory2;
+import org.opengis.referencing.FactoryException;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -45,7 +42,7 @@ import java.util.Map;
  * limitations under the License.
  */
 
-public class AuthorizationsTutorial {
+public class GeoServerAuthorizationsTutorial {
 
     /**
      * Creates a base filter that will return a small subset of our results. This can be tweaked to
@@ -53,8 +50,8 @@ public class AuthorizationsTutorial {
      *
      * @return
      *
-     * @throws CQLException
-     * @throws IOException
+     * @throws org.geotools.filter.text.cql2.CQLException
+     * @throws java.io.IOException
      */
     static Filter createBaseFilter()
             throws CQLException, IOException {
@@ -65,35 +62,20 @@ public class AuthorizationsTutorial {
         // We are going to query for events in Ukraine during the
         // civil unrest.
 
-        // We'll start by looking at a particular day in February of 2014
-        Calendar calendar = Calendar.getInstance();
-        calendar.clear();
-        calendar.set(Calendar.YEAR, 2013);
-        calendar.set(Calendar.MONTH, Calendar.JANUARY);
-        calendar.set(Calendar.DAY_OF_MONTH, 1);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        Date start = calendar.getTime();
-
-        calendar.set(Calendar.YEAR, 2014);
-        calendar.set(Calendar.MONTH, Calendar.APRIL);
-        calendar.set(Calendar.DAY_OF_MONTH, 30);
-        calendar.set(Calendar.HOUR_OF_DAY, 23);
-        Date end = calendar.getTime();
-//        2013-01-01T00:00:00.000Z/2014-04-30T23:00:00.000Z
+        // We'll start by looking at a particular time frame
         Filter timeFilter =
-                ff.between(ff.property(GdeltFeature.Attributes.SQLDATE.getName()),
-                           ff.literal(start),
-                           ff.literal(end));
+                ff.between(ff.property(Attributes.SQLDATE.getName()),
+                           ff.literal("2013-01-01T05:00:00.000Z"),
+                           ff.literal("2014-04-30T23:00:00.000Z"));
 
         // We'll bound our query spatially to Ukraine
         Filter spatialFilter =
-                ff.bbox(GdeltFeature.Attributes.geom.getName(),
+                ff.bbox(Attributes.geom.getName(),
                         31.6, 44, 37.4, 47.75,
                         "EPSG:4326");
 
         // we'll also restrict our query to only articles about the US, UK or UN
-        Filter attributeFilter = ff.like(ff.property(GdeltFeature.Attributes.Actor1Name.getName()),
-                                         "UNITED%");
+        Filter attributeFilter = ff.like(ff.property(Attributes.Actor1Name.getName()), "UNITED%");
 
         // Now we can combine our filters using a boolean AND operator
         Filter conjunction = ff.and(Arrays.asList(timeFilter, spatialFilter, attributeFilter));
@@ -104,27 +86,30 @@ public class AuthorizationsTutorial {
     /**
      * Executes a basic bounding box query
      *
-     * @param simpleFeatureTypeName
+     * @param typeName
      * @param dataStore
      *
-     * @throws IOException
-     * @throws CQLException
+     * @throws java.io.IOException
+     * @throws org.geotools.filter.text.cql2.CQLException
      */
-    static void executeQuery(String simpleFeatureTypeName, DataStore dataStore)
-            throws IOException, CQLException {
+    static void executeQuery(String typeName, DataStore dataStore)
+            throws IOException, CQLException, FactoryException {
 
         // start with our basic filter to narrow the results
         Filter cqlFilter = createBaseFilter();
 
         // use the 2-arg constructor for the query - this will not restrict the attributes returned
-        Query query = new Query(simpleFeatureTypeName, cqlFilter);
+        Query query = new Query(typeName, cqlFilter, new String[] {"geom"});
+
+        // restrict the max features coming back for performance
+        query.setMaxFeatures(10);
 
         // get the feature store used to query the GeoMesa data
-        FeatureStore featureStore = (AccumuloFeatureStore) dataStore.getFeatureSource(
-                simpleFeatureTypeName);
+        FeatureSource featureSource = dataStore.getFeatureSource(
+                typeName);
 
         // execute the query
-        FeatureCollection results = featureStore.getFeatures(query);
+        FeatureCollection results = featureSource.getFeatures(query);
 
         // loop through all results
         FeatureIterator iterator = results.features();
@@ -174,37 +159,38 @@ public class AuthorizationsTutorial {
      */
     public static void main(String[] args)
             throws Exception {
-        // read command line options - this contains the connection to accumulo and the table to query
+        // read command line options - this contains the path to geoserver and the data store to query
         CommandLineParser parser = new BasicParser();
-        Options options = SetupUtil.getGeomesaDataStoreOptions();
+        Options options = SetupUtil.getWfsOptions();
         CommandLine cmd = parser.parse(options, args);
 
-        // verify that we can see this Accumulo destination in a GeoTools manner
-        Map<String, String> dsConf = SetupUtil.getAccumuloDataStoreConf(cmd);
+        String geoserverHost = cmd.getOptionValue(SetupUtil.GEOSERVER_URL);
+        if (!geoserverHost.endsWith("/")) {
+            geoserverHost += "/";
+        }
 
-        // get an instance of the data store that uses the default authorizations provider, which will use whatever auths the connector has available
-        System.setProperty(AuthorizationsProvider.AUTH_PROVIDER_SYS_PROPERTY,
-                           DefaultAuthorizationsProvider.class.getName());
-        AccumuloDataStore authDataStore = (AccumuloDataStore) DataStoreFinder.getDataStore(dsConf);
-        assert authDataStore != null;
+        // create the URL to GeoServer. Note that we need to point to the 'GetCapabilities' request,
+        // and that we are using WFS version 1.0.0
+        String geoserverUrl = geoserverHost + "wfs?request=GetCapabilities&version=1.0.0";
 
-        // get another instance of the data store that uses our authorizations provider that always returns empty auths
-        System.setProperty(AuthorizationsProvider.AUTH_PROVIDER_SYS_PROPERTY,
-                           EmptyAuthorizationsProvider.class.getName());
-        AccumuloDataStore noAuthDataStore = (AccumuloDataStore) DataStoreFinder.getDataStore(dsConf);
+        // create the geotools configuration for a WFS data store
+        Map<String, String> configuration = new HashMap<String, String>();
+        configuration.put(WFSDataStoreFactory.URL.key, geoserverUrl);
+        configuration.put(WFSDataStoreFactory.WFS_STRATEGY.key, "geoserver");
+        configuration.put(WFSDataStoreFactory.TIMEOUT.key, cmd.getOptionValue(SetupUtil.TIMEOUT, "99999"));
 
-        // create the simple feature type for our test
-        String simpleFeatureTypeName = cmd.getOptionValue(SetupUtil.FEATURE_NAME);
-        SimpleFeatureType simpleFeatureType = GdeltFeature.buildGdeltFeatureType(
-                simpleFeatureTypeName);
+        System.out.println("Executing query against '" + geoserverHost +
+                           "' with client keystore '" + System.getProperty("javax.net.ssl.keyStore") +
+                           "'");
 
-        // execute the query, with and without visibilities
-        System.out.println("\nExecuting query with AUTHORIZED data store: auths are '"
-                           + authDataStore.authorizationsProvider().getAuthorizations() + "'");
-        executeQuery(simpleFeatureTypeName, authDataStore);
-        System.out.println("Executing query with UNAUTHORIZED data store: auths are '"
-                           + noAuthDataStore.authorizationsProvider().getAuthorizations() + "'");
-        executeQuery(simpleFeatureTypeName, noAuthDataStore);
+        // verify we have gotten the correct datastore
+        WFSDataStore wfsDataStore = (WFSDataStore) DataStoreFinder.getDataStore(configuration);
+        assert wfsDataStore != null;
+
+        // the geoserver data store to query
+        String geoserverDataStore = cmd.getOptionValue(SetupUtil.FEATURE_STORE);
+
+        executeQuery(geoserverDataStore, wfsDataStore);
     }
 
 
