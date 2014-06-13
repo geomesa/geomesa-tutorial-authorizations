@@ -185,13 +185,13 @@ public class AuthorizationsTutorial {
         // get an instance of the data store that uses the default authorizations provider, which will use whatever auths the connector has available
         System.setProperty(AuthorizationsProvider.AUTH_PROVIDER_SYS_PROPERTY,
                            DefaultAuthorizationsProvider.class.getName());
-        AccumuloDataStore authDataStore = (AccumuloDataStore) DataStoreFinder.getDataStore(dsConf);
+        DataStore authDataStore = DataStoreFinder.getDataStore(dsConf);
         assert authDataStore != null;
 
         // get another instance of the data store that uses our authorizations provider that always returns empty auths
         System.setProperty(AuthorizationsProvider.AUTH_PROVIDER_SYS_PROPERTY,
                            EmptyAuthorizationsProvider.class.getName());
-        AccumuloDataStore noAuthDataStore = (AccumuloDataStore) DataStoreFinder.getDataStore(dsConf);
+        DataStore noAuthDataStore = DataStoreFinder.getDataStore(dsConf);
 
         // create the simple feature type for our test
         String simpleFeatureTypeName = cmd.getOptionValue(SetupUtil.FEATURE_NAME);
@@ -200,10 +200,12 @@ public class AuthorizationsTutorial {
 
         // execute the query, with and without visibilities
         System.out.println("\nExecuting query with AUTHORIZED data store: auths are '"
-                           + authDataStore.authorizationsProvider().getAuthorizations() + "'");
+                           + ((AccumuloDataStore) authDataStore).authorizationsProvider()
+                                                                .getAuthorizations() + "'");
         executeQuery(simpleFeatureTypeName, authDataStore);
         System.out.println("Executing query with UNAUTHORIZED data store: auths are '"
-                           + noAuthDataStore.authorizationsProvider().getAuthorizations() + "'");
+                           + ((AccumuloDataStore) noAuthDataStore).authorizationsProvider()
+                                                                  .getAuthorizations() + "'");
         executeQuery(simpleFeatureTypeName, noAuthDataStore);
     }
 

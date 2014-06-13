@@ -34,6 +34,7 @@ public class SetupUtil {
     public static final String PASSWORD = "password";
     public static final String AUTHS = "auths";
     public static final String TABLE_NAME = "tableName";
+    public static final String VISIBILITIES = "visibilities";
 
     public static final String FEATURE_STORE = "featureStore";
     public static final String GEOSERVER_URL = "geoserverUrl";
@@ -45,6 +46,7 @@ public class SetupUtil {
                                                                USER,
                                                                PASSWORD,
                                                                AUTHS,
+                                                               VISIBILITIES,
                                                                TABLE_NAME};
 
     /**
@@ -105,6 +107,11 @@ public class SetupUtil {
                                        .withDescription(
                                                "the FeatureTypeName used to store the GDELT data, e.g.:  gdelt")
                                        .create(FEATURE_NAME));
+
+        options.addOption(OptionBuilder.withArgName(VISIBILITIES).hasArg()
+                                       .withDescription(
+                                               "the visibilities applied to the GDELT data, e.g.:  user")
+                                       .create(VISIBILITIES));
 
         return options;
     }
