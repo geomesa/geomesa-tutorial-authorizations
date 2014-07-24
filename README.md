@@ -68,7 +68,7 @@ Run the tutorial
 On the command-line, run:
 
 ```
-java -cp ./target/geomesa-tutorial-authorizations-accumulo1.5-1.0-1.0-SNAPSHOT.jar geomesa.tutorial.AuthorizationsTutorial -instanceId <instance> -zookeepers <zoos> -user <user> -password <pwd> -tableName <table> -featureName <feature>
+java -cp ./target/geomesa-tutorial-authorizations-accumulo1.5-1.0-SNAPSHOT.jar geomesa.tutorial.AuthorizationsTutorial -instanceId <instance> -zookeepers <zoos> -user <user> -password <pwd> -tableName <table> -featureName <feature>
 ```
 
 where you provide the following arguments:

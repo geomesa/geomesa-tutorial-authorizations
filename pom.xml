@@ -4,8 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>geomesa</groupId>
+    <groupId>geomesa-tutorial</groupId>
     <artifactId>geomesa-tutorial-authorizations-accumulo1.5</artifactId>
+    <name>GeoMesa Authorizations Tutorial</name>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
@@ -16,7 +17,7 @@
         <dependency>
             <groupId>geomesa</groupId>
             <artifactId>geomesa-core-accumulo1.5</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
