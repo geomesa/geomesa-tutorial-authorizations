@@ -1,9 +1,9 @@
 package geomesa.tutorial;
 
-import geomesa.core.data.AccumuloDataStore;
-import geomesa.core.data.AccumuloFeatureStore;
-import geomesa.core.security.AuthorizationsProvider;
-import geomesa.core.security.DefaultAuthorizationsProvider;
+import org.locationtech.geomesa.core.data.AccumuloDataStore;
+import org.locationtech.geomesa.core.data.AccumuloFeatureStore;
+import org.locationtech.geomesa.core.security.AuthorizationsProvider;
+import org.locationtech.geomesa.core.security.DefaultAuthorizationsProvider;
 import geomesa.tutorial.GdeltFeature.Attributes;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
