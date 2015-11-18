@@ -1,7 +1,7 @@
 package geomesa.tutorial;
 
-import org.locationtech.geomesa.core.security.AuthorizationsProvider;
 import org.apache.accumulo.core.security.Authorizations;
+import org.locationtech.geomesa.security.AuthorizationsProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -55,7 +55,6 @@ public class LdapAuthorizationsProvider
 
     private final Logger logger = LoggerFactory.getLogger(LdapAuthorizationsProvider.class);
 
-    @Override
     public void configure(Map<String, Serializable> params) {
         // load the properties from the props file on the classpath
 
@@ -92,7 +91,6 @@ public class LdapAuthorizationsProvider
         searchControls.setSearchScope(SearchControls.SUBTREE_SCOPE);
     }
 
-    @Override
     public Authorizations getAuthorizations() {
         // if there is an authenticated spring object, try to retrieve the auths from that, otherwise use empty auths
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

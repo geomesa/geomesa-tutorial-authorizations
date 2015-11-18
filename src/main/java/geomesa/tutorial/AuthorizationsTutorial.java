@@ -1,9 +1,5 @@
 package geomesa.tutorial;
 
-import org.locationtech.geomesa.core.data.AccumuloDataStore;
-import org.locationtech.geomesa.core.data.AccumuloFeatureStore;
-import org.locationtech.geomesa.core.security.AuthorizationsProvider;
-import org.locationtech.geomesa.core.security.DefaultAuthorizationsProvider;
 import geomesa.tutorial.GdeltFeature.Attributes;
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -17,6 +13,10 @@ import org.geotools.factory.CommonFactoryFinder;
 import org.geotools.feature.FeatureCollection;
 import org.geotools.feature.FeatureIterator;
 import org.geotools.filter.text.cql2.CQLException;
+import org.locationtech.geomesa.accumulo.data.AccumuloDataStore;
+import org.locationtech.geomesa.accumulo.data.AccumuloFeatureStore;
+import org.locationtech.geomesa.security.AuthorizationsProvider;
+import org.locationtech.geomesa.security.DefaultAuthorizationsProvider;
 import org.opengis.feature.Feature;
 import org.opengis.feature.Property;
 import org.opengis.feature.simple.SimpleFeatureType;
